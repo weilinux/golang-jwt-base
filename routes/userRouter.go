@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	controller "github.com/weilinux/golang-jwt-project/controllers"
+	"github.com/weilinux/golang-jwt-project/middleware"
 )
 
 func UserRouter(incomingRoutes *gin.Engine) {
@@ -10,7 +11,8 @@ func UserRouter(incomingRoutes *gin.Engine) {
 	//he should not be able to access these users routes without user's token
 	//如果整个系统变成很大的时候，也是可以通过这样限制的
 
-	//incomingRoutes.Use(middleware.Authenticate())
+	//Use() means that before the following routes be accessed, be executed in every request
+	incomingRoutes.Use(middleware.Authenticate())
 	incomingRoutes.GET("/users", controller.GetUsers())
 	incomingRoutes.GET("/users/:user_id", controller.GetUser())
 

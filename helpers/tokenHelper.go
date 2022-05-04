@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/weilinux/golang-jwt-project/database"
 	"go.mongodb.org/mongo-driver/bson"
@@ -52,6 +53,38 @@ func GenerateAllTokens(email string, firstName string, lastName string, userType
 
 	return token, refreshToken
 }
+
+func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
+	token, err := jwt.ParseWithClaims(
+		signedToken, 
+		&SignedDetails{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(SECURITY_KEY), nil
+		},
+	)
+
+	if err != nil {
+		msg = err.Error()
+		return
+	}
+
+	claims, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		msg = fmt.Sprintf("token无效")
+		msg = err.Error()
+		return
+	}
+
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		msg = fmt.Sprintf("token过期了!")
+		msg = err.Error()
+		return
+	}
+
+	return claims, msg
+}
+
+
 
 func UpdateAllTokens(signedToken string, signedRefreshToken string, userId string) {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
